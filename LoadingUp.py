@@ -2,11 +2,11 @@ from graphics import *
 import random
 import time
 
-int 
+int
 
 def main():
     n = random.randint(10, 50)
-    win = GraphWin("My Circle", 1500, 700, autoflush = False)
+    win = GraphWin("Loading", 1500, 700, autoflush = False)
     sum = .1;
     summ = 0;
 
@@ -106,7 +106,9 @@ def main():
     message.draw(win)
     win.update()
 
-    win.getMouse() # Pause to view result
+    # win.getMouse() # Pause to view result
     win.close()    # Close window when done
+    import physSim
+
 
 main()
