@@ -1,7 +1,10 @@
 import OpenGL
 import pygame
 import random
+import math
+import array
 
+from array import *
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -152,6 +155,20 @@ ground_vertices = (
     (-20,-5,20)
 )
 
+def Equation(inX, inY):
+    x = inX
+    y = inY
+    # MAIN
+    z = (math.cos(y*(x-18)/50)*math.sin((x+10)/5 + y/10)*1.5) + math.sin(y/5) + math.cos(x/5)
+    # FUNKY
+    # z = -(y**2) - ((x**6)/6) + ((x**4)*5/4) - ((x**2)*2) + 6*(math.exp(-(x**2)))
+    if (x**2 + y**2) > 400:
+        z = -10000
+    else:
+        z = -math.sqrt(400 - (x)**2 - (y)**2) + 10
+    return z
+
+
 def Settings():
     #SETUP/SETTINGS
     X = 1600
@@ -282,13 +299,103 @@ def Ground():
 
     x = 0
     y = 0
-    for vertex in ground_vertices:
-        x+=1
-        y += 1
-        if y > 3:
-            y = 0
-        glColor3fv(groundColors[y])
-        glVertex3fv(vertex)
+    w, h = 40, 40
+    groundVertsArray = [[0 for x in range(w)] for y in range(h)]
+    groundSurfsArray = [[0 for x in range(w)] for y in range(h)]
+    groundVerts = []
+    for y in range(-20,20):
+        for x in range(-20,20):
+            z = Equation(x, y)
+            w = (x, z, y)
+            groundVerts.append(w)
+            x += 20
+            y += 20
+            groundVertsArray[x][y] = z
+            y -= 20
+
+    # for surface in surfaces:
+    #     y += 1
+    #     if y > 4:
+    #         y = 0
+    #     for vertex in surface:
+    #         glColor3fv(groundColors[y])
+    #         glVertex3fv(groundVerts[vertex])
+
+    for x in range(0,38):
+        for y in range(0,38):
+            groundSurfsArray[x][y] = ((x, y, groundVertsArray[x][y]), (x+1, y, groundVertsArray[x+1][y]), (x+1, y+1, groundVertsArray[x+1][y+1]), (x, y+1, groundVertsArray[x][y+1]))
+
+    yColor = 0
+    bigZ = -8
+    littleZ = 0
+    prevX = 0
+    prevY = 0
+    prevZ = 0
+    for x in range(0, 38):
+        for y in range(0, 38):
+            if groundVertsArray[x][y] != -10000:
+                color = .25 + groundVertsArray[x][y]/20 + (x+y)/(72*3)
+                print("Color : ", color)
+                glColor3fv((color + .3, color + .1, color))
+                # glColor3fv(groundColors[yColor])
+                # glColor3fv(((x+y)/156,(x+y)/156,(x+y)/156,))
+                glVertex3fv((x-20, groundVertsArray[x][y], y-20))
+                prevX = x-20
+                prevY = y-20
+                prevZ = groundVertsArray[x][y]
+            else :
+                glVertex3fv((prevX, prevZ, prevY))
+
+            if groundVertsArray[x+1][y] != -10000:
+                color = .25 + groundVertsArray[x+1][y]/20 + (x+y+1)/(72*3)
+                glColor3fv((color + .3, color + .1, color))
+                # glColor3fv(groundColors[yColor])
+                # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
+                glVertex3fv((x-19, groundVertsArray[x+1][y], y-20))
+                prevX = x-19
+                prevY = y-20
+                prevZ = groundVertsArray[x+1][y]
+            else :
+                glVertex3fv((prevX, prevZ, prevY))
+
+            if groundVertsArray[x+1][y+1] != -10000:
+                color = .25 + groundVertsArray[x+1][y+1]/20 + (x+y+2)/(72*3)
+                glColor3fv((color + .3, color + .1, color))
+                # glColor3fv(groundColors[yColor])
+                # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
+                glVertex3fv((x-19, groundVertsArray[x+1][y+1], y-19))
+                prevX = x-19
+                prevY = y-19
+                prevZ = groundVertsArray[x+1][y+1]
+            else :
+                glVertex3fv((prevX, prevZ, prevY))
+
+
+            if groundVertsArray[x][y+1] != -10000:
+                color = .25 + groundVertsArray[x][y+1]/20 + (x+y+1)/(72*3)
+                glColor3fv((color + .3, color + .1, color))
+                # glColor3fv(groundColors[yColor])
+                # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
+                glVertex3fv((x-20, groundVertsArray[x][y+1], y-19))
+                prevX = x-20
+                prevY = y-19
+                prevZ = groundVertsArray[x][y+1]
+            else :
+                glVertex3fv((prevX, prevZ, prevY))
+
+
+                print("X : ", x)
+                print("Y : ", y)
+                if bigZ < groundVertsArray[x][y]:
+                    bigZ = groundVertsArray[x][y]
+                if littleZ > groundVertsArray[x][y]:
+                    littleZ = groundVertsArray[x][y]
+                print("bigZ : ", bigZ)
+                print("littleZ : ", littleZ)
+                # (.6, .5, .5),
+                # (.35, .25, .25),
+                # (.85, .75, .75),
+                # (.7, .6, .6)
 
     glEnd()
 
@@ -296,6 +403,7 @@ def set_vertices(max_distance):
     x_value_change = random.randrange(-18,18)
     y_value_change = -5
     z_value_change = random.randrange(-18,18)
+    y_value_change = Equation(x_value_change, z_value_change)
 
     new_vertices = []
 
@@ -315,6 +423,7 @@ def set_vertices(max_distance):
     return new_vertices
 
 def Cube(vertices):
+
     glBegin(GL_QUADS)
     y = 0
     for surface in surfaces:
@@ -327,7 +436,7 @@ def Cube(vertices):
             glColor3fv(colors[y][x])
             glVertex3fv(vertices[vertex])
     glEnd()
-
+    #z = (cos(y(x-18)/50)sin((x+10)/5 + y/10)*1.5) + sin(y/5) + cos(x/5) - 5
     glBegin(GL_LINES)
     # for edge in edges:
     #     for vertex in edge:
@@ -337,6 +446,7 @@ def Cube(vertices):
 
 def main():
     Settings()
+    pygame.time.wait(200)
     mainRunning = True
     pygame.init()
     display = (1600, 800)
@@ -365,11 +475,11 @@ def main():
     accel = 0
     accelDir = False
     while mainRunning:
-        if i > 5:
+        if i > 1:
             i = 0
         i += 1
 
-        if i == 5:
+        if i == 1:
             if j > 0:
                 cube_dict[j] = set_vertices(max_distance)
                 j -= 1
@@ -405,10 +515,6 @@ def main():
                     mainRunning = False
             #Key press events
 
-        # glTranslatef(random.randrange(-10,10),random.randrange(-10,10), -60)
-        #Multiplies Matrix by transition matrix
-        #AKA Move back 5 units (z)
-
         #camera setup
         x = glGetDoublev(GL_MODELVIEW_MATRIX)
         camera_x = x[3][0]
@@ -430,7 +536,7 @@ def main():
             # glRotatef(10, 0, 4, 0)
 
         pygame.display.flip()
-        pygame.time.wait(25)
+        # pygame.time.wait(1)
 
 #-------------------------------------------------------------------
         # object_passed = False
