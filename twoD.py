@@ -77,6 +77,10 @@ surfaces = (
 #     (8, 12),
 # )
 
+w, h = 20, 20
+treePlaceArray = [[0 for x in range(w)] for y in range(h)]
+treePlaceArray = [[0 for x in range(w)] for y in range(h)]
+
 groundColors = (
     (.6, .5, .5),
     (.35, .25, .25),
@@ -158,14 +162,17 @@ ground_vertices = (
 def Equation(inX, inY):
     x = inX
     y = inY
-    # MAIN
-    z = (math.cos(y*(x-18)/50)*math.sin((x+10)/5 + y/10)*1.5) + math.sin(y/5) + math.cos(x/5)
-    # FUNKY
-    # z = -(y**2) - ((x**6)/6) + ((x**4)*5/4) - ((x**2)*2) + 6*(math.exp(-(x**2)))
-    if (x**2 + y**2) > 400:
+    try:
+        # MAIN
+        # z = ((math.cos(y*(x-18)/50)*math.sin((x+10)/5 + y/10)*1.5) + math.sin(y/5) + math.cos(x/5)) -5
+        # FUNKY
+        # z = -(y**2) - ((x**6)/6) + ((x**4)*5/4) - ((x**2)*2) + 6*(math.exp(-(x**2)))
+        # LEVI'S "FUNKY" GRAPH
+        # z = sqrt(800 - x**2 - y**2) + 10
+        z = -0.1*max(x**2, y**2)/4 - 1
+    except:
         z = -10000
-    else:
-        z = -math.sqrt(400 - (x)**2 - (y)**2) + 10
+
     return z
 
 
@@ -334,8 +341,7 @@ def Ground():
     for x in range(0, 38):
         for y in range(0, 38):
             if groundVertsArray[x][y] != -10000:
-                color = .25 + groundVertsArray[x][y]/20 + (x+y)/(72*3)
-                print("Color : ", color)
+                color = .05 + groundVertsArray[x][y]/40 + (x+y)/(72*1.5)
                 glColor3fv((color + .3, color + .1, color))
                 # glColor3fv(groundColors[yColor])
                 # glColor3fv(((x+y)/156,(x+y)/156,(x+y)/156,))
@@ -347,7 +353,7 @@ def Ground():
                 glVertex3fv((prevX, prevZ, prevY))
 
             if groundVertsArray[x+1][y] != -10000:
-                color = .25 + groundVertsArray[x+1][y]/20 + (x+y+1)/(72*3)
+                color = .05 + groundVertsArray[x][y]/40 + (x+y+1)/(72*1.5)
                 glColor3fv((color + .3, color + .1, color))
                 # glColor3fv(groundColors[yColor])
                 # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
@@ -359,7 +365,7 @@ def Ground():
                 glVertex3fv((prevX, prevZ, prevY))
 
             if groundVertsArray[x+1][y+1] != -10000:
-                color = .25 + groundVertsArray[x+1][y+1]/20 + (x+y+2)/(72*3)
+                color = .05 + groundVertsArray[x][y]/40 + (x+y+2)/(72*1.5)
                 glColor3fv((color + .3, color + .1, color))
                 # glColor3fv(groundColors[yColor])
                 # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
@@ -372,7 +378,7 @@ def Ground():
 
 
             if groundVertsArray[x][y+1] != -10000:
-                color = .25 + groundVertsArray[x][y+1]/20 + (x+y+1)/(72*3)
+                color = .05 + groundVertsArray[x][y]/40 + (x+y+1)/(72*1.5)
                 glColor3fv((color + .3, color + .1, color))
                 # glColor3fv(groundColors[yColor])
                 # glColor3fv(((x+y)/78,(x+y)/78,(x+y)/78,))
@@ -384,14 +390,10 @@ def Ground():
                 glVertex3fv((prevX, prevZ, prevY))
 
 
-                print("X : ", x)
-                print("Y : ", y)
                 if bigZ < groundVertsArray[x][y]:
                     bigZ = groundVertsArray[x][y]
                 if littleZ > groundVertsArray[x][y]:
                     littleZ = groundVertsArray[x][y]
-                print("bigZ : ", bigZ)
-                print("littleZ : ", littleZ)
                 # (.6, .5, .5),
                 # (.35, .25, .25),
                 # (.85, .75, .75),
@@ -400,27 +402,78 @@ def Ground():
     glEnd()
 
 def set_vertices(max_distance):
+    global treeNum
     x_value_change = random.randrange(-18,18)
     y_value_change = -5
     z_value_change = random.randrange(-18,18)
     y_value_change = Equation(x_value_change, z_value_change)
+    xDeriv = Equation(x_value_change + 1, z_value_change + 1) - y_value_change
+
+    # try :
+    #     print(xDeriv*100)
+    # except :
+    #     print("Failed : ", xDeriv)
 
     new_vertices = []
 
-    for vert in vertices:
-        new_vert = []
+    #Check if light level
+    determine = random.uniform(-5, xDeriv*100 + 2)
 
-        new_x = vert[0] + x_value_change
-        new_y = vert[1] + y_value_change
-        new_z = vert[2] + z_value_change
+    #Check if too close to other trees
+    pointX = x_value_change//2 + 10
+    pointY = z_value_change//2 + 10
 
-        new_vert.append(new_x)
-        new_vert.append(new_y)
-        new_vert.append(new_z)
+    if (treePlaceArray[pointX][pointY] == 0):
+        treePlaceArray[pointX][pointY] = 1
+        placeTree = True
+        for y in range(0, 10):
+            for x in range(0,10):
+                print(treePlaceArray[x][y],end = "")
+            print("")
+        print("")
+        print ("X val : ", pointX, ". Y val : ", pointY)
+        print("Tree Number : ", treeNum)
+    else :
+        placeTree = False
+        # for y in range(0, 10):
+        #     for x in range(0,10):
+        #         print(treePlaceArray[x][y],end = "")
+        #     print("")
+        # print("")
 
-        new_vertices.append(new_vert)
+    if (determine < 0 and placeTree) :
+        for vert in vertices:
+            new_vert = []
 
-    return new_vertices
+            new_x = vert[0] + x_value_change
+            new_y = vert[1] + y_value_change
+            new_z = vert[2] + z_value_change
+
+            new_vert.append(new_x)
+            new_vert.append(new_y)
+            new_vert.append(new_z)
+
+            new_vertices.append(new_vert)
+
+        treeNum -= 1
+
+        return new_vertices
+    else :
+        for vert in vertices:
+            new_vert = []
+
+            new_x = vert[0] + x_value_change
+            new_y = vert[1] - 500
+            new_z = vert[2] + z_value_change
+
+            new_vert.append(new_x)
+            new_vert.append(new_y)
+            new_vert.append(new_z)
+
+            new_vertices.append(new_vert)
+
+            # print("test")
+        return new_vertices
 
 def Cube(vertices):
 
@@ -474,27 +527,22 @@ def main():
 
     accel = 0
     accelDir = False
+    makeGround = True
+    for x in range(treeNum):
+        cube_dict[x] =set_vertices(max_distance)
     while mainRunning:
-        if i > 1:
-            i = 0
-        i += 1
-
-        if i == 1:
-            if j > 0:
-                cube_dict[j] = set_vertices(max_distance)
-                j -= 1
         #ME====================
-        if accel >= 1 :
-            accelDir = True
-        elif accel <= -1 :
-            accelDir = False
-        if not accelDir :
-            accel += .05
-        else :
-            accel -= .05
-        #Me stuff
-        # glRotatef(10, 0, 4, 0)
-        glTranslatef(0, accel/10, 0)
+        # if accel >= 1 :
+        #     accelDir = True
+        # elif accel <= -1 :
+        #     accelDir = False
+        # if not accelDir :
+        #     accel += .05
+        # else :
+        #     accel -= .05
+        # #Me stuff
+        # # glRotatef(10, 0, 4, 0)
+        # glTranslatef(0, accel/10, 0)
         #ME========================
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT]:
@@ -533,7 +581,12 @@ def main():
         #DRAW ALL
         for each_cube in cube_dict:
             Cube(cube_dict[each_cube])
-            # glRotatef(10, 0, 4, 0)
+        #     # glRotatef(10, 0, 4, 0)
+
+        if (treeNum != 0):
+            print("TreeNum :" , treeNum)
+            for x in range(treeNum):
+                cube_dict[40 + x] =set_vertices(max_distance)
 
         pygame.display.flip()
         # pygame.time.wait(1)
