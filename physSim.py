@@ -32,6 +32,8 @@ previous_sample_time    = pygame.time.get_ticks()
 ticks = 0
 
 run = True
+p1y = 0
+p1x = 0
 while run:
     # SETUP
     for event in pygame.event.get():
