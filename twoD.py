@@ -164,9 +164,9 @@ def Equation(inX, inY):
     y = inY
     try:
         # MAIN
-        # z = ((math.cos(y*(x-18)/50)*math.sin((x+10)/5 + y/10)*1.5) + math.sin(y/5) + math.cos(x/5)) -5
+        z = ((math.cos(y*(x-18)/50)*math.sin((x+10)/5 + y/10)*1.5) + math.sin(y/5) + math.cos(x/5)) -5
         # FUNKY
-        z = -(y**2) - ((x**6)/6) + ((x**4)*5/4) - ((x**2)*2) + 6*(math.exp(-(x**2)))
+        # z = -(y**2) - ((x**6)/6) + ((x**4)*5/4) - ((x**2)*2) + 6*(math.exp(-(x**2)))
         # LEVI'S "FUNKY" GRAPH
         # z = sqrt(800 - x**2 - y**2) + 10
         # z = -0.1*max(x**2, y**2)/4 - 1
